@@ -1,0 +1,402 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="StrideHub - Premium, stylish, and comfortable footwear for everyday wear. Shop sneakers, formal, and casual shoes on mobile or desktop.">
+    <meta name="keywords" content="StrideHub, footwear, sneakers, casual shoes, formal shoes, stylish, comfortable, mobile shopping, online shoe store">
+    <meta name="author" content="StrideHub">
+    <title>StrideHub - Style Meets Comfort</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Open+Sans:wght@400&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/swiper/swiper-bundle.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+        }
+        h1, h2, h3 {
+            font-family: 'Poppins', sans-serif;
+        }
+        .hero-bg {
+            background-image: url('https://via.placeholder.com/1920x600?text=StrideHub+Hero+Banner');
+            background-size: cover;
+            background-position: center;
+        }
+        .product-card img {
+            transition: transform 0.3s ease;
+        }
+        .product-card:hover img {
+            transform: scale(1.05);
+        }
+        .filter-btn {
+            transition: background-color 0.3s ease;
+        }
+        .filter-btn:hover {
+            background-color: #28a745;
+        }
+        .filter-btn.active {
+            background-color: #28a745;
+            color: white;
+        }
+        .rating i {
+            color: #f97316;
+        }
+        .swiper-container {
+            padding: 0 10px;
+        }
+        .swiper-slide {
+            width: auto;
+        }
+        .btn-primary {
+            background-color: #28a745;
+        }
+        .btn-primary:hover {
+            background-color: #218838;
+        }
+        .text-primary {
+            color: #28a745;
+        }
+        .hover\:text-primary:hover {
+            color: #28a745;
+        }
+        /* Sticky Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 50;
+        }
+        body {
+            padding-top: 80px; /* Adjust based on header height */
+        }
+        @media (max-width: 640px) {
+            .product-card button {
+                padding: 0.75rem 1rem;
+                font-size: 1rem;
+            }
+            body {
+                padding-top: 60px; /* Adjust for smaller screens */
+            }
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+    <!-- Header -->
+    <header class="bg-gray-800 text-white py-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center px-4">
+            <a href="index.html">
+                <img src="https://via.placeholder.com/150x50?text=StrideHub+Logo" alt="StrideHub Logo" class="h-12">
+            </a>
+            <nav class="space-x-6">
+                <a href="#home" class="hover:text-primary">Home</a>
+                <a href="#shop" class="hover:text-primary">Shop</a>
+                <a href="about.html" class="hover:text-primary">About</a>
+                <a href="contact.html" class="hover:text-primary">Contact</a>
+                <a href="#cart" class="hover:text-primary">Cart</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-bg h-96 flex items-center justify-center text-center text-white">
+        <div>
+            <h2 class="text-4xl md:text-5xl font-bold mb-4">Style Meets Comfort</h2>
+            <p class="text-xl mb-6">Every Step Matters with StrideHub</p>
+            <a href="#shop" class="btn-primary text-white px-6 py-3 rounded-full hover:bg-green-700">Shop Now</a>
+        </div>
+    </section>
+
+    <!-- Featured Categories -->
+    <section class="py-12 bg-gray-100">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-8">Explore Our Collections</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center">
+                    <img src="https://via.placeholder.com/300x200?text=Sneakers" alt="Sneakers Collection" class="mx-auto rounded-lg" loading="lazy">
+                    <h3 class="text-xl font-semibold mt-4">Sneakers</h3>
+                </div>
+                <div class="text-center">
+                    <img src="https://via.placeholder.com/300x200?text=Formal" alt="Formal Collection" class="mx-auto rounded-lg" loading="lazy">
+                    <h3 class="text-xl font-semibold mt-4">Formal</h3>
+                </div>
+                <div class="text-center">
+                    <img src="https://via.placeholder.com/300x200?text=Casual" alt="Casual Collection" class="mx-auto rounded-lg" loading="lazy">
+                    <h3 class="text-xl font-semibold mt-4">Casual</h3>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Shop Section -->
+    <section id="shop" class="py-12">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-8">New Arrivals</h2>
+            <!-- Filters -->
+            <div class="flex justify-center space-x-4 mb-8">
+                <button class="filter-btn px-4 py-2 bg-gray-200 rounded active" data-filter="all">All</button>
+                <button class="filter-btn px-4 py-2 bg-gray-200 rounded" data-filter="men">Men</button>
+                <button class="filter-btn px-4 py-2 bg-gray-200 rounded" data-filter="women">Women</button>
+                <button class="filter-btn px-4 py-2 bg-gray-200 rounded" data-filter="new">New Arrivals</button>
+            </div>
+            <!-- Products (Swiper Carousel) -->
+            <div class="swiper-container">
+                <div class="swiper-wrapper" id="product-grid">
+                    <div class="swiper-slide product-card bg-white shadow-lg rounded-lg overflow-hidden" data-category="men new">
+                        <img src="https://via.placeholder.com/300x300?text=Air+Jordan+1+Low" alt="Air Jordan 1 Low" class="w-full" loading="lazy">
+                        <div class="p-4">
+                            <h3 class="text-lg font-semibold">Air Jordan 1 Low</h3>
+                            <p class="text-gray-600">MRP: ₹8,995.00 (Inclusive of all taxes)</p>
+                            <p class="text-sm text-gray-500">Sizes: UK 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5</p>
+                            <div class="rating mt-2">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                                <span class="ml-2 text-sm">4.5 (120 reviews)</span>
+                            </div>
+                            <div class="flex space-x-2 mt-4">
+                                <button class="btn-primary text-white px-4 py-2 rounded w-full hover:bg-green-700">Add to Cart</button>
+                                <button class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300"><i class="fas fa-heart"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="swiper-slide product-card bg-white shadow-lg rounded-lg overflow-hidden" data-category="men">
+                        <img src="https://via.placeholder.com/300x300?text=Latest+Men’s+Multicolour+Shoes" alt="Latest Men’s Multicolour Shoes" class="w-full" loading="lazy">
+                        <div class="p-4">
+                            <h3 class="text-lg font-semibold">Latest Men’s Multicolour Shoes</h3>
+                            <p class="text-gray-600">₹4,499</p>
+                            <p class="text-sm text-gray-500">Sizes: IND-6, 7, 8, 9, 10</p>
+                            <p class="text-sm text-gray-500">Material: Synthetic, Sole: Rubber, Lace-Up</p>
+                            <p class="text-sm text-gray-500">Step up your style and comfort with these Multicolour Sports & Casual Shoes for Men – the perfect blend of fashion, function, and durability.</p>
+                            <div class="rating mt-2">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <span class="ml-2 text-sm">5.0 (80 reviews)</span>
+                            </div>
+                            <div class="flex space-x-2 mt-4">
+                                <button class="btn-primary text-white px-4 py-2 rounded w-full hover:bg-green-700">Add to Cart</button>
+                                <button class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300"><i class="fas fa-heart"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="swiper-pagination"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="py-12 bg-gray-100">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-8">What Our Customers Say</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <p class="italic">"These sneakers are the perfect mix of style and comfort! I wear them all day, and my feet feel great."</p>
+                    <p class="mt-4 font-semibold">— Priya S.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <p class="italic">"StrideHub’s sneakers are my go-to for work. They look sharp and feel amazing."</p>
+                    <p class="mt-4 font-semibold">— Arjun M.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="py-12 bg-gray-800 text-white text-center">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl font-bold mb-4">Join the StrideHub Circle</h2>
+            <p class="mb-6">Get exclusive deals and early access to new collections.</p>
+            <form class="flex justify-center">
+                <input type="email" placeholder="Enter your email" class="px-4 py-2 rounded-l-lg w-64">
+                <button type="submit" class="btn-primary text-white px-4 py-2 rounded-r-lg hover:bg-green-700">Subscribe</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <h3 class="text-xl font-bold">StrideHub</h3>
+                    <p class="mt-2">Style Meets Comfort. Every Step Matters.</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold">Quick Links</h3>
+                    <ul class="mt-2 space-y-2">
+                        <li><a href="#shop" class="hover:text-primary">Shop</a></li>
+                        <li><a href="about.html" class="hover:text-primary">About Us</a></li>
+                        <li><a href="contact.html" class="hover:text-primary">Contact</a></li>
+                        <li><a href="#returns" class="hover:text-primary">Returns & Refunds</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold">Contact Us</h3>
+                    <p class="mt-2">Email: support@stridehub.com</p>
+                    <p>Phone: +91 123 456 7890</p>
+                    <p>WhatsApp: +91 987 654 3210</p>
+                    <p>Follow us: <a href="#" class="hover:text-primary">Instagram</a> | <a href="#" class="hover:text-primary">Twitter</a></p>
+                </div>
+            </div>
+            <p class="text-center mt-6">© 2025 StrideHub. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script>
+        // Filter functionality
+        document.querySelectorAll('.filter-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                const filter = button.getAttribute('data-filter');
+                const products = document.querySelectorAll('.product-card');
+                products.forEach(product => {
+                    if (filter === 'all' || product.getAttribute('data-category').includes(filter)) {
+                        product.style.display = 'block';
+                    } else {
+                        product.style.display = 'none';
+                    }
+                });
+            });
+        });
+
+        // Swiper carousel
+        new Swiper('.swiper-container', {
+            slidesPerView: 'auto',
+            spaceBetween: 20,
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+            },
+            breakpoints: {
+                640: { slidesPerView: 1 },
+                768: { slidesPerView: 2 },
+                1024: { slidesPerView: 3 },
+            },
+        });
+
+        // JSON-LD Schema
+        const schema = {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "StrideHub",
+            "url": "https://www.stridehub.com",
+            "logo": "https://via.placeholder.com/150x50?text=StrideHub+Logo",
+            "contactPoint": {
+                "@type": "ContactPoint",
+                "telephone": "+91-123-456-7890",
+                "contactType": "customer service",
+                "email": "support@stridehub.com"
+            },
+            "sameAs": [
+                "https://www.instagram.com/stridehub",
+                "https://www.twitter.com/stridehub"
+            ]
+        };
+        const productSchema1 = {
+            "@context": "https://schema.org",
+            "@type": "Product",
+            "name": "Air Jordan 1 Low",
+            "image": [
+                "https://via.placeholder.com/300x300?text=Air+Jordan+1+Low",
+                "https://via.placeholder.com/300x300?text=Air+Jordan+1+Low+Side",
+                "https://via.placeholder.com/300x300?text=Air+Jordan+1+Low+Top"
+            ],
+            "description": "Premium Air Jordan 1 Low Men's Shoes, perfect for everyday wear.",
+            "sku": "SH-AJ001",
+            "brand": { "@type": "Brand", "name": "Nike" },
+            "offers": {
+                "@type": "Offer",
+                "priceCurrency": "INR",
+                "price": "8995",
+                "availability": "https://schema.org/InStock",
+                "url": "https://www.stridehub.com/products/air-jordan-1-low"
+            },
+            "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "4.5",
+                "reviewCount": "120"
+            }
+        };
+        const productSchema2 = {
+            "@context": "https://schema.org",
+            "@type": "Product",
+            "name": "Latest Men’s Multicolour Shoes",
+            "image": [
+                "https://via.placeholder.com/300x300?text=Latest+Men’s+Multicolour+Shoes",
+                "https://via.placeholder.com/300x300?text=Latest+Men’s+Multicolour+Shoes+Side",
+                "https://via.placeholder.com/300x300?text=Latest+Men’s+Multicolour+Shoes+Top",
+                "https://via.placeholder.com/300x300?text=Latest+Men’s+Multicolour+Shoes+Detail"
+            ],
+            "description": "Step up your style and comfort with these Multicolour Sports & Casual Shoes for Men – the perfect blend of fashion, function, and durability.",
+            "sku": "SH-MS001",
+            "brand": { "@type": "Brand", "name": "StrideHub" },
+            "material": "Synthetic, Rubber Sole",
+            "offers": {
+                "@type": "Offer",
+                "priceCurrency": "INR",
+                "price": "4499",
+                "availability": "https://schema.org/InStock",
+                "url": "https://www.stridehub.com/products/mens-multicolour-shoes"
+            },
+            "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "5.0",
+                "reviewCount": "80"
+            }
+        };
+        const script = document.createElement('script');
+        script.type = 'application/ld+json';
+        script.text = JSON.stringify([schema, productSchema1, productSchema2]);
+        document.head.appendChild(script);
+    </script>
+</body>
+</html>
